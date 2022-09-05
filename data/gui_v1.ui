@@ -90,7 +90,7 @@
            <enum>QFrame::NoFrame</enum>
           </property>
           <property name="text">
-           <string>TextLabel</string>
+           <string>A = 정답처리 / S = 영어 보이게 or 안보이게 / D 오답처리</string>
           </property>
          </widget>
         </item>

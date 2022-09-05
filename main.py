@@ -19,8 +19,8 @@ plt.rcParams['font.family'] ='Malgun Gothic'        #<<< 한글 깨짐 방지
 plt.rcParams['axes.unicode_minus'] =False           #<<< -(마이너스) 부호 깨짐 방지
 
 
-ui_path = "gui_v1.ui"
-sen_path = "sentence.csv"
+ui_path = "data/gui_v1.ui"
+sen_path = "data/sentence.csv"
 
 main_window_form_class = uic.loadUiType(ui_path)[0]
 class MainWindow(QtWidgets.QMainWindow, main_window_form_class):
@@ -28,13 +28,19 @@ class MainWindow(QtWidgets.QMainWindow, main_window_form_class):
     def __init__(self):
         super(MainWindow, self).__init__()
         self.setupUi(self)
+        #self.check_inocent():
         #self.pushButton.clicked.connect(self.get_new_sen)
         self.get_new_sen()
         self.eng_key = 1
 
+    # def check_inocent(self):
+    #     db = pd.read_csv(sen_path,encoding = 'cp949').set_index('key')
+    #     db[time]
+
     def get_new_sen(self):
         self.db = pd.read_csv(sen_path,encoding = 'cp949').set_index('key') #, encoding = 'cp949'), encoding='UTF-8')
-        
+        self.db['time'] = pd.to_datetime(self.db['time'])
+
         if self.db[self.db['correct']==0].__len__() != 0:
             target_db = self.db[self.db['correct']==0]
             print(target_db.index.tolist().__len__(),'0 exist')
@@ -61,7 +67,7 @@ class MainWindow(QtWidgets.QMainWindow, main_window_form_class):
 
         elif a0.key() == Qt.Key_D:  #D 틀림
             print('정상')
-            self.save_recode(0)
+            #self.save_recode(0)
             self.get_new_sen()
             self.Eng_window.setText('')
 
@@ -76,7 +82,7 @@ class MainWindow(QtWidgets.QMainWindow, main_window_form_class):
         
             
     def save_recode(self,num):
-        time_stamp = pd.Timestamp.now()
+        time_stamp = pd.Timestamp.today()
 
         self.db['time'].loc[self.target] = time_stamp
         self.db['correct'].loc[self.target] = num

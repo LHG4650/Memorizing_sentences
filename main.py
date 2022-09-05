@@ -12,6 +12,7 @@ import pandas as pd
 import sys
 import matplotlib.pyplot as plt
 import random
+import datetime
 
 #%matplotlib inline                              
 
@@ -82,7 +83,7 @@ class MainWindow(QtWidgets.QMainWindow, main_window_form_class):
         
             
     def save_recode(self,num):
-        time_stamp = pd.Timestamp.today()
+        time_stamp = datetime.datetime.now()
 
         self.db['time'].loc[self.target] = time_stamp
         self.db['correct'].loc[self.target] = num

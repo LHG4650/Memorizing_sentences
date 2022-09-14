@@ -6,6 +6,7 @@
 
 
 from PyQt5 import uic
+
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import pyqtSignal, QThread, QTimer
 from PyQt5.QtGui import QImage, QPixmap, QPalette, QColor, QDoubleValidator
@@ -53,17 +54,29 @@ class MainWindow(QtWidgets.QMainWindow, main_window_form_class):
 
         if self.db[self.db['correct'] == 0].__len__() != 0:
             target_db = self.db[self.db['correct'] == 0]
-            print(target_db.index.tolist().__len__(), '0 exist')
-            self.target = random.choice(target_db.index.tolist())
+            print(target_db.index.tolist().__len__(), '<못맞춘 잔여개수 ')
+            target_list = target_db.index.tolist()
+            try:
+                target_list.remove(self.target)
+                self.target = random.choice(target_list)
+            except:
+                print('이상?')
+                self.target = random.choice(target_db.index.tolist())
         else:
-            print('1 exist')
+            print('전부 1 exist')
+            dif = datetime.datetime.now() - self.db['time'] 
+            print(dif.mean())
             target_db = self.db[self.db['correct'] == 1]
             target_db = target_db.sort_values('time')
             target_idx_list = target_db.index.tolist()[
                 :int(self.db.__len__()*.2)]
-            self.target = random.choice(target_idx_list)
+            try:
+                target_idx_list.remove(self.target)
+                self.target = random.choice(target_idx_list)
+            except:
+                self.target = random.choice(target_idx_list)
 
-        print(self.target)
+        # print(self.target)
         self.target_data = target_db.loc[self.target]
         self.Ko_window.setText(str(self.target_data['ko']))
         self.Eng_window.setText("")
@@ -71,13 +84,11 @@ class MainWindow(QtWidgets.QMainWindow, main_window_form_class):
 
     def keyPressEvent(self, a0):
         if a0.key() == Qt.Key_A:    # A누르면 정답
-            print('정상')
             self.save_recode(1)
             self.get_new_sen()
             self.Eng_window.setText('')
 
         elif a0.key() == Qt.Key_D:  # D 틀림
-            print('정상')
             # self.save_recode(0)
             self.get_new_sen()
             self.Eng_window.setText('')

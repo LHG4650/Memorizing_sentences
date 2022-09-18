@@ -1,5 +1,8 @@
 # https://rfriend.tistory.com/497 pandas timestamp 찍는법
 
+# git fetch --all                       #깃 저장소 로컬에 덮어쓰기
+# git reset --hard origin/master        #깃 저장소 로컬에 덮어쓰기
+
 
 #   git config --global user.email "gusrms4650@naver.com"
 #   git config --global user.name "LHG"

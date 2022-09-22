@@ -67,7 +67,7 @@ class MainWindow(QtWidgets.QMainWindow, main_window_form_class):
                 self.target = random.choice(target_db.index.tolist())
         else:
             print('전부 1 exist')
-            dif = datetime.datetime.now() - self.db['time'] 
+            dif = datetime.datetime.now() - self.db['time']
             print(dif.mean())
             target_db = self.db[self.db['correct'] == 1]
             target_db = target_db.sort_values('time')

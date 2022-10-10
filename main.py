@@ -50,39 +50,78 @@ class MainWindow(QtWidgets.QMainWindow, main_window_form_class):
     #     db[time]
 
     def get_new_sen(self):
-        # , encoding = 'cp949'), encoding='UTF-8')
-        # , encoding='cp949').set_index('key')
         self.db = pd.read_excel(sen_path).set_index('key')
         self.db['time'] = pd.to_datetime(self.db['time'])
 
-        if self.db[self.db['correct'] == 0].__len__() != 0:
-            target_db = self.db[self.db['correct'] == 0]
-            print(target_db.index.tolist().__len__(), '<못맞춘 잔여개수 ')
-            target_list = target_db.index.tolist()
-            try:
-                target_list.remove(self.target)
-                self.target = random.choice(target_list)
-            except:
-                print('이상?')
-                self.target = random.choice(target_db.index.tolist())
-        else:
-            print('전부 1 exist')
-            dif = datetime.datetime.now() - self.db['time']
-            print(dif.mean())
-            target_db = self.db[self.db['correct'] == 1]
-            target_db = target_db.sort_values('time')
-            target_idx_list = target_db.index.tolist()[
-                :int(self.db.__len__()*.2)]
-            try:
-                target_idx_list.remove(self.target)
-                self.target = random.choice(target_idx_list)
-            except:
-                self.target = random.choice(target_idx_list)
 
-        # print(self.target)
-        self.target_data = target_db.loc[self.target]
+        db = self.db
+        M_count = (db['correct']==1).sum()                              # 외운 갯수
+        UnM_count = (db['correct']!=1).sum()                            # 못외운 개수
+        dif = (datetime.datetime.now() - db['time']).mean()
+
+        if pd.isnull(dif):
+            dif = datetime.timedelta(0.001)
+        time = dif.total_seconds()/60/60/24
+        
+        try:
+            time = str(int(time))+"일 "+str(int((time-int(time))*24))+"시간"
+        except:
+            time = '0일 0시간'
+    
+        print(time)
+        status = '외운 문장:',M_count,'/외우는 중:',UnM_count,'/암기주기:',time      
+        self.status_view.setText(str(status)[1:-1])
+
+        if M_count > 50:
+            older_M_key = db['time'].sort_values()[:int(M_count*.2)].index.tolist()      # 외운것중 오래된것들 추출 10개
+        else:
+            older_M_key = db['time'].sort_values()[:10].index.tolist()      # 외운것중 오래된것들 추출 10개
+
+        upper_UnM_key = db[db['correct']!=1][:10].index.tolist()
+
+        try:
+            get_setting = int(self.intval_set.text())
+        except:
+            get_setting = 1
+        mem_standard_interval = datetime.timedelta(get_setting)
+
+        if UnM_count > 0:
+            if dif > mem_standard_interval*2:
+                print('복습모드')
+                mode = '복습'
+                print('외운것중 오래된것중 1개')
+                target = random.choice(older_M_key)
+
+            elif dif > mem_standard_interval:
+                print('암기 + 복습모드')
+                mode = '암기 + 복습'
+                print('외운것중 오래된거나 안외운것중에 최근거 5개중 1개')
+                Mem = random.choice(older_M_key)
+                UnM = random.choice(upper_UnM_key[:5])
+                target = random.choice([Mem,UnM])
+
+            elif dif < mem_standard_interval:
+                print('암기모드')
+                mode = '암기'
+                print('안외운것충 위에있는거중 10개중 1개')
+                target =  random.choice(upper_UnM_key)
+        
+        else:
+            print('복습모드')
+            mode = '복습'
+
+            print('외운것중 오래된것중 1개')
+            target = random.choice(older_M_key)
+
+        self.mode_state.setText(mode)
+
+
+        self.target = target
+        self.target_data = db.loc[self.target]
         self.Ko_window.setText(str(self.target_data['ko']))
         self.Eng_window.setText("")
+
+        self.sen_info.setText(str(self.target_data['part']))
         self.eng_key = 1
 
     def keyPressEvent(self, a0):
